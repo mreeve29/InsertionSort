@@ -22,7 +22,7 @@ public class Sorter<T extends Comparable<T>> {
 		}
 	}
 	
-	public ArrayList<T> getList(){
+	public ArrayList<T> getSortedList(){
 		return sorted;
 	}
 	
