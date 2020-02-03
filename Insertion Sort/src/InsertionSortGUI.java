@@ -1,8 +1,14 @@
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map.Entry;
 
-import BreezySwing.*;
-import javax.swing.*;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JTextArea;
+
+import BreezySwing.GBFrame;
+import BreezySwing.IntegerField;
 
 public class InsertionSortGUI extends GBFrame {
 
@@ -49,10 +55,14 @@ public class InsertionSortGUI extends GBFrame {
 		}else if(menuItem == medianMI) {
 			messageBox("The median is " + getMedian());
 		}else if(menuItem == modeMI) {
-			int mode;
+			ArrayList<Integer> modes;
 			try {
-				mode = getMode();
-				messageBox("The mode is " + mode);
+				modes = getModes();
+				String str = "";
+				for(int i : modes) {
+					str += "" + i + " ";
+				}
+				messageBox("The mode is " + str);
 			}catch (NoModeException e) {
 				messageBox("There is no mode");
 			}
@@ -88,32 +98,34 @@ public class InsertionSortGUI extends GBFrame {
 		}
 	}
 	
-	//FIX ME
-	private int getMode() throws NoModeException {
-		int maxNum = sortedList.get(0);
-		int lastNum = maxNum;
-		int maxCount = 1;
-		int count = maxCount;
+	private ArrayList<Integer> getModes() throws NoModeException{
+		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+		for(int i : sortedList) {
+			map.put(i, 0);
+		}
+		for(int i : sortedList) {
+			map.put(i, map.get(i)+1);
+		}
 		
-		for(int i = 1; i < sortedList.size(); i++) {
-			if(sortedList.get(i) == lastNum) {
-				count++;
-			}else {
-				count = 1;
-				lastNum = sortedList.get(i);
-			}
-			if(maxCount < count) {
-				maxCount = count;
-				maxNum = lastNum;
+		ArrayList<Integer> modes = new ArrayList<Integer>();
+		
+		int highestOcc = 0;
+		
+		for(Entry<Integer, Integer> i : map.entrySet()) {
+			if(i.getValue() > highestOcc) {
+				modes.clear();
+				modes.add(i.getKey());
+				highestOcc = i.getValue();
+			}else if (i.getValue() == highestOcc) {
+				modes.add(i.getKey());
 			}
 		}
 		
-		if(maxCount == 1 && sortedList.size() > 1){
-			throw new NoModeException("There is no mode in list");
+		if(highestOcc == 1 && sortedList.size() >  1) {
+			throw new NoModeException("No Mode in List");
 		}
 		
-		return maxNum;
-		
+		return modes;
 	}
 	
 	
