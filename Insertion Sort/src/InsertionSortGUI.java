@@ -68,13 +68,13 @@ public class InsertionSortGUI extends GBFrame{
 			if(baseList.size() == 0) {
 				messageBox("There is nothing in the list");
 			}else {
-				messageBox("The mean is " + round(getAverage()));
+				messageBox("The mean is " + round(Sorter.getAverage(baseList)));
 			}
 		}else if(menuItem == medianMI) {
 			if(baseList.size() == 0) {
 				messageBox("There is nothing in the list");
 			}else {
-				messageBox("The median is " + getMedian());
+				messageBox("The median is " + Sorter.getMedian(new Sorter<Integer>(baseList).getSortedList()));
 			}
 		}else if(menuItem == modeMI) {
 			if(baseList.size() == 0) {
@@ -83,7 +83,7 @@ public class InsertionSortGUI extends GBFrame{
 			}
 			ArrayList<Integer> modes;
 			try {
-				modes = getModes();
+				modes = Sorter.getModes(baseList);
 				messageBox("Mode: " + modes);
 			}catch (NoModeException e) {
 				messageBox("There is no mode");
@@ -92,7 +92,7 @@ public class InsertionSortGUI extends GBFrame{
 			if(baseList.size() == 0) {
 				messageBox("There is nothing in the list");
 			}else {
-				messageBox("The standard deviation is " + round(getStandardDeviation()));
+				messageBox("The standard deviation is " + round(Sorter.getStandardDeviation(baseList)));
 			}
 		}
 	}
@@ -108,78 +108,7 @@ public class InsertionSortGUI extends GBFrame{
 		}
 		currentListArea.setText(listStr);
 	}
-
-	//calculates average
-	private double getAverage() {
-		double total = 0;
-		for(Integer i : baseList) {
-			total += i;
-		}
-		return total/(double)baseList.size();
-	}
 	
-	//finds the median
-	private double getMedian() {
-		if(baseList.size() % 2 == 0) {
-			//even -> 2 nums at middle
-			int num1 = baseList.get(baseList.size()/2);
-			int num2 = baseList.get(baseList.size()/2-1);
-			return (num1 + num2)/2.0;
-		}else {
-			//odd -> 1 num at middle
-			return baseList.get(baseList.size()/2);
-		}
-	}
-	
-	//finds the mode(s)
-	private ArrayList<Integer> getModes() throws NoModeException{
-		ArrayList<Integer> key = new ArrayList<Integer>();
-		ArrayList<Integer> value = new ArrayList<Integer>();
-		
-		for(int i : baseList) {
-			if(!key.contains(i)) {
-				key.add(i);
-				value.add(0);
-			}
-		}
-		for(int i : baseList) {
-			int current = key.indexOf(i);
-			value.set(current, value.get(current) + 1);
-		}
-		
-		ArrayList<Integer> modes = new ArrayList<Integer>();
-		
-		int highestOcc = 0;
-		
-		for(int i = 0; i < value.size(); i++) {
-			if(value.get(i) > highestOcc) {
-				modes.clear();
-				modes.add(key.get(i));
-				highestOcc = value.get(i);
-			}else if (value.get(i) == highestOcc) {
-				modes.add(key.get(i));
-			}
-		}
-		
-		if(highestOcc == 1 && baseList.size() >  1) {
-			throw new NoModeException("No Mode in List");
-		}
-		
-		return modes;
-	}
-	
-	//calculates standard deviation
-	private double getStandardDeviation() {
-		double mean = getAverage();
-		
-		double total = 0;
-		for(int i : baseList) {
-			total += Math.pow(i - mean,2);
-		}
-		double secondMean = total / baseList.size();
-		
-		return Math.sqrt(secondMean);
-	}
 	
 	//listens for enter key presses
 	private KeyListener kl = new KeyListener() {
