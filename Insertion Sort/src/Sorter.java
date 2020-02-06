@@ -1,13 +1,18 @@
 import java.util.ArrayList;
 
 public class Sorter<T extends Comparable<T>> {
+	
+	//class object
 	private ArrayList<T> sorted;
 	
+	//constructor
 	public Sorter(ArrayList<T> arr) {
 		sorted = arr;
 		sort();
 	}
 	
+	
+	//uses insertion sort to sort given array
 	public void sort() {
 		for(int i = 1; i < sorted.size(); i++) {
 			T num = sorted.get(i);
@@ -22,6 +27,7 @@ public class Sorter<T extends Comparable<T>> {
 		}
 	}
 	
+	//returns sorted array
 	public ArrayList<T> getSortedList(){
 		return sorted;
 	}

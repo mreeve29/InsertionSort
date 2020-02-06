@@ -1,5 +1,7 @@
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -14,7 +16,10 @@ import BreezySwing.IntegerField;
 
 public class InsertionSortGUI extends GBFrame{
 
-	private JLabel addLabel = addLabel("Enter number to add:",1,1,1,1);
+	
+	//class objects
+	//swing elements
+	private JLabel addLabel = addLabel("Enter number to add(press enter key to add):",1,1,1,1);
 	private IntegerField numField = addIntegerField(0,1,2,1,1);
 	
 	private JButton addButton = addButton("Add Number",2,2,1,1);
@@ -22,8 +27,11 @@ public class InsertionSortGUI extends GBFrame{
 	private JLabel listLabel = addLabel("Current numbers in list:",3,1,2,1);
 	private JTextArea currentListArea = addTextArea("",4,1,2,1);
 	
-	private JLabel sortedListLabel = addLabel("Sorted list:",5,1,2,1);
-	private JTextArea sortedListArea = addTextArea("",6,1,2,1);
+	private JButton quitButton = addButton("Quit",5,2,1,1);
+	
+	private JMenuItem resetMI = addMenuItem("File","Reset");
+	
+	private JMenuItem sortMI = addMenuItem("View","Sorted List");
 	
 	private JMenuItem meanMI = addMenuItem("Compute","Mean");
 	private JMenuItem medianMI = addMenuItem("Compute","Median");
@@ -32,54 +40,76 @@ public class InsertionSortGUI extends GBFrame{
 	
 	
 	private ArrayList<Integer> baseList;
-	private ArrayList<Integer> sortedList;
-	private final byte MAX_NUMS = 25;
+	private final byte MAX_NUMS = 25;//max number of numbers that can be entered
 	
+	//button event listener
 	public void buttonClicked(JButton button) {
 		if(button == addButton) {
 			addNumber(numField);
+		}else if(button == quitButton) {
+			System.exit(1);
 		}
 	}
 	
+	//menu event listener
 	public void menuItemSelected(JMenuItem menuItem){
-		if(menuItem == meanMI) {
-			messageBox("The mean is " + getAverage());
+		if(menuItem == resetMI) {
+			baseList.clear();
+			updateListArea();
+			addButton.setEnabled(true);
+		}else if(menuItem == sortMI) {
+			ArrayList<Integer> sorted = new Sorter<Integer>(baseList).getSortedList();
+			if(sorted.size() == 0) {
+				messageBox("There is nothing in the list");
+			}else {
+				messageBox("Sorted List: " + sorted);
+			}
+		}else if(menuItem == meanMI) {
+			if(baseList.size() == 0) {
+				messageBox("There is nothing in the list");
+			}else {
+				messageBox("The mean is " + round(getAverage()));
+			}
 		}else if(menuItem == medianMI) {
-			messageBox("The median is " + getMedian());
+			if(baseList.size() == 0) {
+				messageBox("There is nothing in the list");
+			}else {
+				messageBox("The median is " + getMedian());
+			}
 		}else if(menuItem == modeMI) {
+			if(baseList.size() == 0) {
+				messageBox("There is nothing in the list");
+				return;
+			}
 			ArrayList<Integer> modes;
 			try {
-				modes = getModesNew();
-				String str = "";
-				for(int i : modes) {
-					str += "" + i + " ";
-				}
-				messageBox("The mode is " + str);
+				modes = getModes();
+				messageBox("Mode: " + modes);
 			}catch (NoModeException e) {
 				messageBox("There is no mode");
 			}
 		}else if (menuItem == stdMI) {
-			messageBox("The standard deviation is " + getStandardDeviation());
+			if(baseList.size() == 0) {
+				messageBox("There is nothing in the list");
+			}else {
+				messageBox("The standard deviation is " + round(getStandardDeviation()));
+			}
 		}
 	}
 	
+	//updates the text area as numbers are entered
 	private void updateListArea() {
 		String listStr = "";
 		for(Integer i : baseList) {
 			listStr += i.toString() + ",";
 		}
-		listStr = listStr.substring(0, listStr.length()-1);
-		currentListArea.setText(listStr);
-		
-		String sortedStr = "";
-		for (Integer i : new Sorter<Integer>(baseList).getSortedList()) {
-			sortedStr += i.toString() + ",";
+		if(listStr.length() > 1) {
+			listStr = listStr.substring(0, listStr.length()-1);
 		}
-		sortedStr = sortedStr.substring(0, sortedStr.length()-1);
-		sortedListArea.setText(sortedStr);
-		
+		currentListArea.setText(listStr);
 	}
 
+	//calculates average
 	private double getAverage() {
 		double total = 0;
 		for(Integer i : baseList) {
@@ -88,6 +118,7 @@ public class InsertionSortGUI extends GBFrame{
 		return total/(double)baseList.size();
 	}
 	
+	//finds the median
 	private double getMedian() {
 		if(baseList.size() % 2 == 0) {
 			//even -> 2 nums at middle
@@ -100,55 +131,27 @@ public class InsertionSortGUI extends GBFrame{
 		}
 	}
 	
+	//finds the mode(s)
 	private ArrayList<Integer> getModes() throws NoModeException{
-		HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
-		for(int i : sortedList) {
-			map.put(i, 0);
-		}
-		for(int i : sortedList) {
-			map.put(i, map.get(i)+1);
-		}
-		
-		ArrayList<Integer> modes = new ArrayList<Integer>();
-		
-		int highestOcc = 0;
-		
-		for(Entry<Integer, Integer> i : map.entrySet()) {
-			if(i.getValue() > highestOcc) {
-				modes.clear();
-				modes.add(i.getKey());
-				highestOcc = i.getValue();
-			}else if (i.getValue() == highestOcc) {
-				modes.add(i.getKey());
-			}
-		}
-		
-		if(highestOcc == 1 && sortedList.size() >  1) {
-			throw new NoModeException("No Mode in List");
-		}
-		
-		return modes;
-	}
-	
-	private ArrayList<Integer> getModesNew() throws NoModeException{
 		ArrayList<Integer> key = new ArrayList<Integer>();
 		ArrayList<Integer> value = new ArrayList<Integer>();
 		
-		for(int i : sortedList) {
+		for(int i : baseList) {
 			if(!key.contains(i)) {
 				key.add(i);
 				value.add(0);
 			}
 		}
-		for(int i = 0; i < sortedList.size(); i++) {
-			value.set(i, value.get(i) + 1);
+		for(int i : baseList) {
+			int current = key.indexOf(i);
+			value.set(current, value.get(current) + 1);
 		}
 		
 		ArrayList<Integer> modes = new ArrayList<Integer>();
 		
 		int highestOcc = 0;
 		
-		for(Integer i : value) {
+		for(int i = 0; i < value.size(); i++) {
 			if(value.get(i) > highestOcc) {
 				modes.clear();
 				modes.add(key.get(i));
@@ -158,26 +161,28 @@ public class InsertionSortGUI extends GBFrame{
 			}
 		}
 		
-		if(highestOcc == 1 && sortedList.size() >  1) {
+		if(highestOcc == 1 && baseList.size() >  1) {
 			throw new NoModeException("No Mode in List");
 		}
 		
 		return modes;
 	}
 	
+	//calculates standard deviation
 	private double getStandardDeviation() {
 		double mean = getAverage();
 		
 		double total = 0;
-		for(int i : sortedList) {
+		for(int i : baseList) {
 			total += Math.pow(i - mean,2);
 		}
-		double secondMean = total / sortedList.size();
+		double secondMean = total / baseList.size();
 		
 		return Math.sqrt(secondMean);
 	}
 	
-	KeyListener kl = new KeyListener() {
+	//listens for enter key presses
+	private KeyListener kl = new KeyListener() {
 		
 		@Override
 		public void keyTyped(KeyEvent e) {}
@@ -185,6 +190,10 @@ public class InsertionSortGUI extends GBFrame{
 		@Override
 		public void keyReleased(KeyEvent e) {
 			if(e.getKeyCode() == KeyEvent.VK_ENTER && numField.hasFocus()) {
+				if(baseList.size() >= MAX_NUMS) {
+					messageBox("Cannot add any more numbers, max is 25");
+					return;
+				}
 				addNumber(numField);
 			}
 		}
@@ -193,6 +202,8 @@ public class InsertionSortGUI extends GBFrame{
 		public void keyPressed(KeyEvent e) {}
 	};
 	
+	//adds number to array & error checks
+	//this is a method because the user can add a number either by clicking the button or pressing enter
 	private void addNumber(IntegerField i) {
 		if(!i.isValidNumber()) {
 			messageBox("Please enter a valid number");
@@ -207,26 +218,30 @@ public class InsertionSortGUI extends GBFrame{
 		if(baseList.size() >= MAX_NUMS) {
 			addButton.setEnabled(false);
 		}
-		
-		Sorter<Integer> s = new Sorter<Integer>(baseList);
-		sortedList = s.getSortedList();
 	}
 	
+	//rounds decimals
+	private String round(double d) {
+		DecimalFormat df = new DecimalFormat("##.##");
+		return df.format(d);
+	}
 	
+	//main class
 	public static void main(String[] args) {
 		new InsertionSortGUI();
 	}
 	
+	//constructor
 	public InsertionSortGUI() {
 		baseList = new ArrayList<Integer>();
-		sortedList = new ArrayList<Integer>();
 		
 		currentListArea.setEditable(false);
+		currentListArea.setFont(new Font("Sans-Serif",0,16));
 		
 		numField.addKeyListener(kl);
 		
 		setTitle("Insertion Sort");
-		setSize(400,400);
+		setSize(600,400);
 		setVisible(true);
 	}
 	
